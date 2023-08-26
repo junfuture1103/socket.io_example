@@ -1,11 +1,11 @@
 package testjun;
 
+import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 import java.net.URISyntaxException;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import org.json.JSONObject;
 
 
 public class socket_jun {
@@ -29,22 +29,31 @@ public class socket_jun {
 		
 		
 		// socket on-emit
-		mSocket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+//		mSocket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+//            @Override
+//            public void call(Object... args) {
+//                System.out.println("Socket connected");
+//        
+//            }
+//        })
+		
+		mSocket.on("connection-success", new Emitter.Listener() {
             @Override
             public void call(Object... args) {
-                System.out.println("Socket connected");
-                
-                JsonObject jsonData = new JsonObject();
-                jsonData.addProperty("key1", "value1 by jun");
-                jsonData.addProperty("key2", "value2 by jun");
-
-                mSocket.emit("Test", jsonData);         
-            }
-        }).on("Test_OK", new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                System.out.println("Received 'Test_OK' event from server");
+                System.out.println("===== connection success ======");
                 // Here, you can perform any action you want upon receiving the "Test" event
+                
+                JSONObject receivedData = (JSONObject) args[0];
+                
+                String key1Value = receivedData.getString("socketId");
+                
+                // socket id get
+                System.out.println(receivedData);
+                System.out.println(key1Value);
+                
+                //getRTPcap
+                getRTPcap();
+                
             }
         }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
             @Override
@@ -56,4 +65,19 @@ public class socket_jun {
 
 	}
 
+    // Function to emit getRTPcap
+    public static void getRTPcap() {
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("roomNumber", "101");
+        jsonData.put("url", "wallpad");
+
+        mSocket.emit("getRTPcap", jsonData, new Ack() {
+            @Override
+            public void call(Object... args) {
+                JSONObject receivedData = (JSONObject) args[0];
+                System.out.println(receivedData);
+            }
+        });
+    }
+	
 }
